@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/index.css">
+</head>
+
+<body>
+    <div id="record" class="flex">
+        <div class="left">
+            <ul class="nav nav-pills nav-stacked" id="nav">
+                <li role="presentation" class="active" data-to="rec"><a href="#">录制</a></li>
+                <li role="presentation" data-to="set"><a href="#">设置</a></li>
+            </ul>
+        </div>
+        <div class="right">
+            <div class="rec">
+                <label>
+                    <input type="checkbox" name="record" checked>
+                    <span>桌面</span>
+                </label>
+                <label>
+                    <input type="checkbox" name="record">
+                    <span>摄像头</span>
+                </label>
+                <div class="btn-box">
+                    <button id="start" type="button" class="btn btn-default">开始</button>
+                </div>
+            </div>
+            <div class="set">
+                <div class="rows flex">
+                    <div class="col-l">外观</div>
+                    <div class="col-r">
+                        <label>
+                            <input type="radio" name="theme" checked>
+                            <span>浅色</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="theme">
+                            <span>深色</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="theme">
+                            <span>跟随系统</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="rows flex">
+                    <div class="col-l">文件保存位置</div>
+                    <div class="col-r">
+                        <div class="input-group">
+                            <input id="filePath" type="text" class="form-control" readonly>
+                            <span class="input-group-btn btn-box">
+                                <button id="change" class="btn btn-default" type="button">更改</button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../renderer.js"></script>
+</body>
+
+</html>

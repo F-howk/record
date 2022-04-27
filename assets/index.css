@@ -1,0 +1,76 @@
+:root{
+    --themeColor:#409eff;
+    --borderColor:#e4e7ed;
+}
+.flex{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+#record{
+    height: 100vh;
+}
+#record>div{
+    height: 100%;
+    overflow-y: auto;
+}
+#record .left{
+    width: 200px;
+    border-right: 1px solid var(--borderColor);
+    padding: 10px;
+}
+#record .right{
+    flex:1;
+}
+#record .left li.active a{
+    background-color: var(--themeColor);
+}
+.rec{
+    padding: 20px;
+}
+.set{
+    display: none;
+}
+.rec label{
+    margin-right: 20px;
+}
+.rec span{
+    vertical-align: top;
+    user-select: none;
+}
+.btn-box{
+    margin-top: 20px;
+}
+.btn-box button{
+    outline: none;
+}
+.btn-box button:focus{
+    outline: none !important;
+}
+.btn-box button:active{
+    outline: none !important;
+}
+.set{
+    padding: 20px;
+}
+.set .col-l{
+    width: 120px;
+}
+.set .col-r{
+    flex: 1;
+    margin-left: 10px;
+}
+.set label{
+    margin-right: 20px;
+}
+.set span{
+    vertical-align: top;
+    user-select: none;
+}
+.set .rows{
+    margin-bottom: 20px;
+    align-items: center;
+}
+.set .input-group{
+    width: 400px;
+}

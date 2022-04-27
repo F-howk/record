@@ -1,0 +1,16 @@
+{
+  "name": "record",
+  "version": "1.0.0",
+  "main": "main.js",
+  "repository": "git@github.com:F-howk/record.git",
+  "author": "zc <1135010828@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^5.1.3",
+    "electron": "^18.1.0",
+    "jquery": "^3.6.0"
+  },
+  "scripts": {
+    "start": "electron ."
+  }
+}

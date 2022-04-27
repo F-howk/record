@@ -1,0 +1,69 @@
+const {
+    app,
+    BrowserWindow,
+    ipcMain,
+    dialog
+} = require('electron')
+const path = require('path')
+
+let filePath = path.join(__dirname, './pages/index.html')
+
+function createWindow() {
+    const win = new BrowserWindow({
+        width:1200,
+        height:800,
+        maxWidth:1200,
+        maxHeight:800,
+        webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false,
+            contextIsolation:false,
+            enableRemoteModule:true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+    })
+
+    win.loadFile(filePath);
+
+    ipcMain.on("changePath",(e,fileSavePath)=>{
+        dialog.showOpenDialog({
+            title:"选择文件夹",
+            defaultPath:fileSavePath,
+            properties:['openDirectory']
+        }).then(res =>{
+            if(res.filePaths?.length > 0){
+                e.sender.send('selectedPath', res.filePaths)
+            }
+        })
+    })
+}
+
+app.allowRendererProcessReuse = false;
+
+app.whenReady().then(() => {
+    createWindow()
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow()
+        }
+    })
+})
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+const gotTheLock = app.requestSingleInstanceLock()
+if (!gotTheLock) {
+    app.quit()
+} else {
+    app.on('second-instance', (event) => {
+        if (win) {
+            if (win.isMinimized()) win.restore()
+            win.focus()
+            win.show()
+        }
+    })
+}
