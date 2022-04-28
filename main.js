@@ -8,12 +8,14 @@ const path = require('path')
 
 let filePath = path.join(__dirname, './pages/index.html')
 
+let win = null;
+
 function createWindow() {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width:1200,
         height:800,
-        maxWidth:1200,
-        maxHeight:800,
+        minWidth:1200,
+        minHeight:800,
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
@@ -41,7 +43,10 @@ function createWindow() {
 app.allowRendererProcessReuse = false;
 
 app.whenReady().then(() => {
-    createWindow()
+    let remote = require("@electron/remote/main");
+    remote.initialize();
+    createWindow();
+    remote.enable(win.webContents)
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

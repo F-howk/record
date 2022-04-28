@@ -1,7 +1,10 @@
 const $ = require("jquery");
 const os = require("os");
 const fs = require("fs");
+const path = require('path')
 const {ipcRenderer} = require('electron')
+
+const {BrowserWindow} = require("@electron/remote")
 
 let fileSavePath = localStorage.getItem("fileSavePath");
 if(!fileSavePath){
@@ -66,7 +69,9 @@ $("#theme-btn").on("change","input",function(e){
 
 
 function record(){
-    console.log(1)
+    let win = new BrowserWindow();
+    let filePath = path.join('./pages/record.html');
+    win.loadFile(filePath);
 }
 
 function setTheme(theme){
