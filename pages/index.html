@@ -31,7 +31,7 @@
                     <span>桌面</span>
                 </label>
                 <label>
-                    <input type="checkbox" name="record">
+                    <input type="checkbox" name="record" disabled>
                     <span>摄像头</span>
                 </label>
                 <div class="btn-box">
@@ -41,17 +41,17 @@
             <div class="set">
                 <div class="rows flex">
                     <div class="col-l">外观</div>
-                    <div class="col-r">
+                    <div id="theme-btn" class="col-r">
                         <label>
-                            <input type="radio" name="theme" checked>
+                            <input id="light" type="radio" name="theme" checked>
                             <span>浅色</span>
                         </label>
                         <label>
-                            <input type="radio" name="theme">
+                            <input id="dark" type="radio" name="theme">
                             <span>深色</span>
                         </label>
                         <label>
-                            <input type="radio" name="theme">
+                            <input id="auto" type="radio" name="theme">
                             <span>跟随系统</span>
                         </label>
                     </div>

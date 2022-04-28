@@ -9,7 +9,6 @@ if(!fileSavePath){
 }
 
 fs.opendir(fileSavePath,(e,dir)=>{
-    console.log(dir)
     if(!dir){
         fs.mkdir(fileSavePath,(err,dir)=>{
             console.log(dir)
@@ -17,6 +16,9 @@ fs.opendir(fileSavePath,(e,dir)=>{
     }
 })
 
+let $themeList = $("input[name=theme]");
+let theme = localStorage.getItem("theme");
+if(theme) setTheme(theme);
 
 $("#filePath").val(fileSavePath);
 
@@ -50,12 +52,29 @@ $("#change").on("click",function(e){
     ipcRenderer.send("changePath",fileSavePath);
 })
 
-ipcRenderer.once("selectedPath",(e,path)=>{
+ipcRenderer.on("selectedPath",(e,path)=>{
     localStorage.setItem("fileSavePath",path[0]);
     $("#filePath").val(path[0]);
     fileSavePath = path[0];
 })
 
+$("#theme-btn").on("change","input",function(e){
+    let curTheme = $(this).attr("id");
+    localStorage.setItem("theme",curTheme);
+    setTheme(curTheme);
+})
+
+
 function record(){
     console.log(1)
+}
+
+function setTheme(theme){
+    $themeList.each((i,v)=>{
+        $(v).attr("checked",false);
+    })
+    $(`#${theme}`).attr("checked",true);
+    document.documentElement.style.setProperty("--bgColor",`var(--${theme}-bgColor)`);
+    document.documentElement.style.setProperty("--fontColor",`var(--${theme}-fontColor)`);
+    document.documentElement.style.setProperty("--btn-bgColor",`var(--${theme}-btn-bgColor)`);
 }

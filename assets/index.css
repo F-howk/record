@@ -1,6 +1,36 @@
 :root{
-    --themeColor:#409eff;
+    /* --themeColor:#409eff; */
+    --btn-bgColor:#eee;
     --borderColor:#e4e7ed;
+    --fontColor:#333;
+    --bgColor:#fff;
+
+    /* 跟随系统主题 */
+    --auto-fontColor:#333;
+    --auto-bgColor:#fff;
+    --auto-btn-bgColor:#eee;
+
+    /* 浅色 */
+    --light-fontColor:#333;
+    --light-bgColor:#fff;
+    --light-btn-bgColor:#eee;
+
+    /* 深色 */
+    --dark-fontColor:#e3e3e3;
+    --dark-bgColor:#121212;
+    --dark-btn-bgColor:rgb(58,58,63);
+}
+body{
+    background-color: var(--bgColor);
+    color: var(--fontColor);
+}
+#record button{
+    background-color: var(--btn-bgColor);
+    color: var(--fontColor);
+}
+#record #filePath{
+    background-color: var(--btn-bgColor);
+    color: var(--fontColor);
 }
 .flex{
     display: flex;
@@ -19,11 +49,17 @@
     border-right: 1px solid var(--borderColor);
     padding: 10px;
 }
+#record .left a{
+    color: var(--fontColor);
+}
 #record .right{
     flex:1;
 }
 #record .left li.active a{
-    background-color: var(--themeColor);
+    background-color: var(--btn-bgColor);
+}
+#record .left li a:hover{
+    background-color: var(--btn-bgColor);
 }
 .rec{
     padding: 20px;
@@ -73,4 +109,18 @@
 }
 .set .input-group{
     width: 400px;
+}
+@media (prefers-color-scheme: dark) {
+    :root{
+        --auto-bgColor:var(--dark-bgColor);
+        --auto-fontColor:var(--dark-fontColor);
+        --auto-btn-bgColor:var(--dark-btn-bgColor);
+    }
+}
+@media (prefers-color-scheme: light) {
+    :root{
+        --auto-bgColor:var(--light-bgColor);
+        --auto-fontColor:var(--light-fontColor);
+        --auto-btn-bgColor:var(--light-btn-bgColor);
+    }
 }
