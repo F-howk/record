@@ -2,18 +2,22 @@ const $ = require("jquery");
 const os = require("os");
 const fs = require("fs");
 const path = require('path')
-const {ipcRenderer} = require('electron')
+const {
+    ipcRenderer
+} = require('electron')
 
-const {BrowserWindow} = require("@electron/remote")
+const {
+    BrowserWindow
+} = require("@electron/remote")
 
 let fileSavePath = localStorage.getItem("fileSavePath");
-if(!fileSavePath){
+if (!fileSavePath) {
     fileSavePath = os.homedir() + "/record";
 }
 
-fs.opendir(fileSavePath,(e,dir)=>{
-    if(!dir){
-        fs.mkdir(fileSavePath,(err,dir)=>{
+fs.opendir(fileSavePath, (e, dir) => {
+    if (!dir) {
+        fs.mkdir(fileSavePath, (err, dir) => {
             console.log(dir)
         })
     }
@@ -21,65 +25,77 @@ fs.opendir(fileSavePath,(e,dir)=>{
 
 let $themeList = $("input[name=theme]");
 let theme = localStorage.getItem("theme");
-if(theme) setTheme(theme);
+if (theme) setTheme(theme);
 
 $("#filePath").val(fileSavePath);
 
-$('#nav').on("click","li",function (e){
-    $('#nav').children().each((i,v)=>{
+$('#nav').on("click", "li", function (e) {
+    $('#nav').children().each((i, v) => {
         $(v).removeClass('active');
     })
     $(this).addClass("active");
     let $to = $(this).attr("data-to");
-    $('.right').children().each((i,v)=>{$(v).hide()});
+    $('.right').children().each((i, v) => {
+        $(v).hide()
+    });
     $("." + $to).show();
 })
 
-$("#start").on("click",function(e){
+$("#start").on("click", function (e) {
     let $checkbox = $("input[name=record]");
     let flag = false;
-    $checkbox.each((i,v)=>{
+    $checkbox.each((i, v) => {
         let checked = $(v)[0].checked;
-        if(checked) flag = true;
+        if (checked) flag = true;
     })
-    if(!flag){
+    if (!flag) {
         alert("请选择录制项")
-    }
-    else{
+    } else {
         record()
     }
 })
 
-$("#change").on("click",function(e){
+$("#change").on("click", function (e) {
     console.log(fileSavePath)
-    ipcRenderer.send("changePath",fileSavePath);
+    ipcRenderer.send("changePath", fileSavePath);
 })
 
-ipcRenderer.on("selectedPath",(e,path)=>{
-    localStorage.setItem("fileSavePath",path[0]);
+ipcRenderer.on("selectedPath", (e, path) => {
+    localStorage.setItem("fileSavePath", path[0]);
     $("#filePath").val(path[0]);
     fileSavePath = path[0];
 })
 
-$("#theme-btn").on("change","input",function(e){
+$("#theme-btn").on("change", "input", function (e) {
     let curTheme = $(this).attr("id");
-    localStorage.setItem("theme",curTheme);
+    localStorage.setItem("theme", curTheme);
     setTheme(curTheme);
 })
 
 
-function record(){
-    let win = new BrowserWindow();
+function record() {
+    let win = new BrowserWindow({
+        webPreferences: {
+            nodeIntegration: true,
+            webSecurity: false,
+            contextIsolation: false,
+            enableRemoteModule: true,
+        }
+    });
     let filePath = path.join('./pages/record.html');
     win.loadFile(filePath);
+    ipcRenderer.send("hide");
+    win.on('close',()=>{
+        ipcRenderer.send("show");
+    })
 }
 
-function setTheme(theme){
-    $themeList.each((i,v)=>{
-        $(v).attr("checked",false);
+function setTheme(theme) {
+    $themeList.each((i, v) => {
+        $(v).attr("checked", false);
     })
-    $(`#${theme}`).attr("checked",true);
-    document.documentElement.style.setProperty("--bgColor",`var(--${theme}-bgColor)`);
-    document.documentElement.style.setProperty("--fontColor",`var(--${theme}-fontColor)`);
-    document.documentElement.style.setProperty("--btn-bgColor",`var(--${theme}-btn-bgColor)`);
+    $(`#${theme}`).attr("checked", true);
+    document.documentElement.style.setProperty("--bgColor", `var(--${theme}-bgColor)`);
+    document.documentElement.style.setProperty("--fontColor", `var(--${theme}-fontColor)`);
+    document.documentElement.style.setProperty("--btn-bgColor", `var(--${theme}-btn-bgColor)`);
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" >
+<svg xmlns="http://www.w3.org/2000/svg">
+  <metadata>Created by iconfont</metadata>
+  <defs>
+  <font id="iconfont" horiz-adv-x="1024">
+    <font-face
+      font-family="iconfont"
+      font-weight="400"
+      font-stretch="normal"
+      units-per-em="1024"
+      ascent="896"
+      descent="-128"
+    />
+      <missing-glyph />
+      
+      <glyph glyph-name="lujing" unicode="&#59025;" d="M722.9375-37.875H301.0625a210.9375 210.9375 0 0 0-210.9375 210.9375V594.9375a210.9375 210.9375 0 0 0 210.9375 210.9375h421.875a210.9375 210.9375 0 0 0 210.9375-210.9375v-421.875a210.9375 210.9375 0 0 0-210.9375-210.9375z"  horiz-adv-x="1024" />
+      
+      <glyph glyph-name="zanting" unicode="&#58918;" d="M401.94184223 86.99147793999998a66.00189322 66.00189322 0 0 0-132.00378814 0V681.00852206a66.00189322 66.00189322 0 0 0 132.00378814 0z m352.12010368 0a66.00189322 66.00189322 0 0 0-132.00378814 0V681.00852206a66.00189322 66.00189322 0 0 0 132.00378814 0z"  horiz-adv-x="1024" />
+      
+      <glyph glyph-name="kaishi1" unicode="&#58914;" d="M161.2 56.1v654c0 56.1 60.7 91.1 109.3 63.1l566.3-327c48.6-28 48.6-98.1 0-126.2L270.4-7c-48.5-28-109.2 7.1-109.2 63.1z"  horiz-adv-x="1024" />
+      
+    </font>
+  </defs>
+</svg>

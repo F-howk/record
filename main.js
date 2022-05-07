@@ -38,6 +38,12 @@ function createWindow() {
             }
         })
     })
+    ipcMain.on("hide",(e)=>{
+        win.hide();
+    })
+    ipcMain.on("show",(e)=>{
+        win.show();
+    })
 }
 
 app.allowRendererProcessReuse = false;

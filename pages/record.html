@@ -5,8 +5,46 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="../assets//icon/iconfont.css">
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        #timeBox{
+            background-color: rgba(0,0,0,0.5);
+            width: 200px;
+            height: 50px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            box-sizing: border-box;
+            color: rgba(255,255,255,0.8);
+            user-select: none;
+        }
+        #timeBox span{
+            flex: 3;
+            text-align: center;
+            overflow: hidden;
+        }
+        #timeBox i{
+            margin-right: 20px;
+            cursor: pointer;
+        }
+        #pause{
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    
+    <div id="timeBox">
+        <span id="timeNum">00:00:00</span>
+        <i id="pause" class="iconfont icon-zanting"></i>
+        <i id="start" class="iconfont icon-kaishi1"></i>
+        <i id="stop" class="iconfont icon-lujing"></i>
+    </div>
+    <script src="../record.js"></script>
 </body>
 </html>
