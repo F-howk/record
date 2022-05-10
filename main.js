@@ -2,7 +2,8 @@ const {
     app,
     BrowserWindow,
     ipcMain,
-    dialog
+    dialog,
+    desktopCapturer
 } = require('electron')
 const path = require('path')
 
@@ -12,37 +13,44 @@ let win = null;
 
 function createWindow() {
     win = new BrowserWindow({
-        width:1200,
-        height:800,
-        minWidth:1200,
-        minHeight:800,
+        width: 1200,
+        height: 800,
+        minWidth: 1200,
+        minHeight: 800,
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
-            contextIsolation:false,
-            enableRemoteModule:true,
+            contextIsolation: false,
+            enableRemoteModule: true,
             preload: path.join(__dirname, 'preload.js')
         }
     })
 
     win.loadFile(filePath);
 
-    ipcMain.on("changePath",(e,fileSavePath)=>{
+    ipcMain.on("changePath", (e, fileSavePath) => {
         dialog.showOpenDialog({
-            title:"选择文件夹",
-            defaultPath:fileSavePath,
-            properties:['openDirectory']
-        }).then(res =>{
-            if(res.filePaths?.length > 0){
+            title: "选择文件夹",
+            defaultPath: fileSavePath,
+            properties: ['openDirectory']
+        }).then(res => {
+            if (res.filePaths?.length > 0) {
                 e.sender.send('selectedPath', res.filePaths)
             }
         })
     })
-    ipcMain.on("hide",(e)=>{
+    ipcMain.on("hide", (e) => {
         win.hide();
     })
-    ipcMain.on("show",(e)=>{
+    ipcMain.on("show", (e) => {
         win.show();
+    })
+    ipcMain.on("getStream", (e) => {
+        desktopCapturer.getSources({
+            types: ['screen']
+        }).then(async sources => {
+            e.sender.send('streamId', sources[0].id)
+        })
     })
 }
 
