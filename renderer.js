@@ -35,6 +35,7 @@ let $themeList = $("input[name=theme]");
 let theme = localStorage.getItem("theme");
 if (theme) setTheme(theme);
 
+
 $("#filePath").val(fileSavePath);
 
 $('#nav').on("click", "li", function (e) {
@@ -68,17 +69,19 @@ $("#change").on("click", function (e) {
     ipcRenderer.send("changePath", fileSavePath);
 })
 
+$("#theme-btn").on("change", "input", function (e) {
+    let curTheme = $(this).attr("id");
+    localStorage.setItem("theme", curTheme);
+    setTheme(curTheme);
+})
+
+
 ipcRenderer.on("selectedPath", (e, path) => {
     localStorage.setItem("fileSavePath", path[0]);
     $("#filePath").val(path[0]);
     fileSavePath = path[0];
 })
 
-$("#theme-btn").on("change", "input", function (e) {
-    let curTheme = $(this).attr("id");
-    localStorage.setItem("theme", curTheme);
-    setTheme(curTheme);
-})
 
 function record() {
     let w_width = 200;
