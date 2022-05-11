@@ -5,15 +5,39 @@
   "repository": "git@github.com:F-howk/record.git",
   "author": "zc <1135010828@qq.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "cross-env NODE_ENV=dev electron .",
+    "build": "cross-env NODE_ENV=prod electron-builder"
+  },
+  "build": {
+    "productName": "record",
+    "appId": "com.record.zc",
+    "copyright": "record zc",
+    "directories": {
+      "output": "dist"
+    },
+    "extraFiles": [
+      "bin/*"
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "record"
+    },
+    "publish": []
+  },
   "dependencies": {
     "@electron/remote": "^2.0.8",
     "bootstrap": "^5.1.3",
-    "electron": "^18.1.0",
     "electron-log": "^4.4.7",
     "fluent-ffmpeg": "^2.1.2",
     "jquery": "^3.6.0"
   },
-  "scripts": {
-    "start": "electron ."
+  "devDependencies": {
+    "electron-builder": "^23.0.3",
+    "electron": "^18.1.0",
+    "cross-env": "^7.0.3"
   }
 }

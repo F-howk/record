@@ -83,7 +83,7 @@ function formateTime(recordTime) {
 async function getStream(source_id) {
     fileSavePath = `${fileSavePath}/${new Date().getTime()}`;
     await fs.mkdirSync(fileSavePath);
-    console.log(fileSavePath)
+    log.log(fileSavePath)
     stream = await navigator.mediaDevices.getUserMedia({
         video: {
             mandatory: {
@@ -110,13 +110,13 @@ async function getStream(source_id) {
         });
         this.audioStream = audioStream;
     } catch (error) {
-        console.log(error);
-        console.log("获取麦克风权限失败，请检查设备权限是否开启");
+        log.log(error);
+        log.warn("获取麦克风权限失败，请检查设备权限是否开启");
     }
     // audioStream.getTracks().forEach((track) => {
     //     streams.addTrack(track);
     //   });
-    console.log(stream)
+    log.log(stream)
     recorder = new MediaRecorder(stream);
     recorder.start(1000);
     recorder.ondataavailable = (event) => {
@@ -125,7 +125,7 @@ async function getStream(source_id) {
         }));
     }
     recorder.onstop = (e)=>{
-        console.log("stop")
+        log.log("stop")
         saveThumbnail(fileSavePath);
         $("#timeBox").css("pointer-events","none");
         setTimeout(()=>{

@@ -52,6 +52,13 @@ function createWindow() {
             e.sender.send('streamId', sources[0].id)
         })
     })
+    let isDev = process.env.NODE_ENV == 'dev';
+    if(!isDev){
+        win.setMenu(null);
+    }
+    else{
+        win.setAutoHideMenuBar(true);
+    }
 }
 
 app.allowRendererProcessReuse = false;
