@@ -11,7 +11,7 @@
   },
   "build": {
     "productName": "record",
-    "appId": "com.record.zc",
+    "appId": "com.zc.record",
     "copyright": "record zc",
     "directories": {
       "output": "dist"
