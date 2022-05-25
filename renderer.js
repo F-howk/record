@@ -143,7 +143,8 @@ function getExtend(str) {
     let index = str.lastIndexOf(".");
     if (index == -1) return;
     let result = str.substring(index);
-    if ([".webm", ".mp4"].includes(result)) {
+    //".webm", 
+    if ([".mp4"].includes(result)) {
         return {
             video: str
         }

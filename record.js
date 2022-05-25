@@ -15,10 +15,11 @@ $("#start").on("click", function () {
     $(this).hide();
     $("#pause").show();
     start();
-    if (stream){
+    if (stream) {
         recorder.resume();
-    };
-    ipcRenderer.send('getStream');
+    }else{
+        ipcRenderer.send('getStream');
+    }
 })
 $("#pause").on("click", function () {
     $(this).hide();
@@ -48,12 +49,11 @@ function pause() {
     recorder.pause();
 }
 
-function stop(){
-    if(recorder){
+function stop() {
+    if (recorder) {
         clearInterval(timer);
         recorder.stop();
-    }
-    else{
+    } else {
         window.close()
     }
 }
@@ -116,21 +116,22 @@ async function getStream(source_id) {
     // audioStream.getTracks().forEach((track) => {
     //     streams.addTrack(track);
     //   });
-    log.log(stream)
+    log.log('stream:',stream);
     recorder = new MediaRecorder(stream);
+    log.log('recorder:',recorder);
     recorder.start(1000);
     recorder.ondataavailable = (event) => {
         saveMedia(new Blob([event.data], {
             type: "video/webm",
         }));
     }
-    recorder.onstop = (e)=>{
+    recorder.onstop = (e) => {
         log.log("stop")
         saveThumbnail(fileSavePath);
-        $("#timeBox").css("pointer-events","none");
-        setTimeout(()=>{
+        $("#timeBox").css("pointer-events", "none");
+        transcoding().then(res =>{
             window.close()
-        },2000)
+        })
     }
 }
 
@@ -149,6 +150,34 @@ function saveMedia(blob) {
 
     reader.onerror = (err) => console.error(err);
     reader.readAsArrayBuffer(blob);
+}
+
+function transcoding() {
+    return new Promise((resolve,reject)=>{
+        let options = [
+            "-vcodec",
+            "copy",
+            "-codec",
+            "copy",
+            "-f",
+            "mp4",
+        ]
+        ffmpeg(fileSavePath + "/video.webm")
+            .setFfmpegPath(process.cwd() + "/bin/ffmpeg.exe")
+            .outputOptions(options)
+            .save(fileSavePath + "/video.mp4")
+            .on("start", function (e) {
+                log.log("ffmpeg is start: " + e);
+            })
+            .on("end", function (e) {
+                log.log("ffmpeg is end");
+                resolve();
+            })
+            .on("error", function (err) {
+                log.log("ffmpeg is error! " + err);
+                reject();
+            })
+    })
 }
 
 ipcRenderer.on("streamId", (e, id) => {
