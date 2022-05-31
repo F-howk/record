@@ -4,7 +4,8 @@ const fs = require("fs");
 const path = require('path')
 const log = require("electron-log");
 const {
-    ipcRenderer
+    ipcRenderer,
+    shell
 } = require('electron')
 
 const {
@@ -37,6 +38,10 @@ if (theme) setTheme(theme);
 
 
 $("#filePath").val(fileSavePath);
+
+$("#filePath").on('click',function(){
+    shell.openPath(fileSavePath)
+})
 
 $('#nav').on("click", "li", function (e) {
     $('#nav').children().each((i, v) => {
@@ -201,7 +206,7 @@ function renderList(path) {
         })
         let str = "";
         res.forEach((v, i) => {
-            str += `<video id="${i}-video" src="${v.video}" poster="${v.img}" controls preload="none"></video>`;
+            str += `<video id="${i}-video" class="video" src="${v.video}" poster="${v.img}" controls preload="none"></video>`;
         })
         $("#video-list").html(str);
         $("#video-list video").on("play", function (e) {
@@ -213,3 +218,14 @@ function renderList(path) {
         })
     })
 }
+window.addEventListener("contextmenu",function(e){
+    if($(e.target).attr("class") == 'video'){
+        let flag = confirm('确认删除吗？');
+        if(flag){
+            let path = $(e.target).attr('src').replace("/video.mp4","")
+            fs.rm(path,{recursive:true},(err)=>{
+                renderList(fileSavePath);
+            })
+        }
+    }
+})
