@@ -13,6 +13,8 @@ const {
     screen
 } = require("@electron/remote")
 
+let win = null;
+
 let fileSavePath = localStorage.getItem("fileSavePath");
 if (!fileSavePath) {
     fileSavePath = os.homedir() + "/record";
@@ -36,10 +38,11 @@ let $themeList = $("input[name=theme]");
 let theme = localStorage.getItem("theme");
 if (theme) setTheme(theme);
 
+setContent();
 
 $("#filePath").val(fileSavePath);
 
-$("#filePath").on('click',function(){
+$("#filePath").on('click', function () {
     shell.openPath(fileSavePath)
 })
 
@@ -80,11 +83,10 @@ $("#theme-btn").on("change", "input", function (e) {
     setTheme(curTheme);
 })
 
-
-ipcRenderer.on("selectedPath", (e, path) => {
-    localStorage.setItem("fileSavePath", path[0]);
-    $("#filePath").val(path[0]);
-    fileSavePath = path[0];
+$("#content-btn").on("change", "input", function (e) {
+    let value = $(this).attr("data-value");
+    localStorage.setItem("contentProtection", value);
+    setContent();
 })
 
 
@@ -98,7 +100,7 @@ function record() {
 
     let options = {
         x: width - w_width - 10,
-        y: height - w_height -10,
+        y: height - w_height - 10,
         width: w_width,
         height: w_height,
         frame: false,
@@ -106,9 +108,9 @@ function record() {
         transparent: true,
     }
 
-    if(isDev) options = {};
+    if (isDev) options = {};
 
-    let win = new BrowserWindow({
+    win = new BrowserWindow({
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
@@ -120,13 +122,19 @@ function record() {
     });
     let filePath = path.join('./pages/record.html');
     win.loadFile(filePath);
-    win.setContentProtection(true);
-    if(!isDev){
+    let flag = localStorage.getItem("contentProtection");
+    let _obj = {
+        'true':true,
+        'false':false
+    }
+    win.setContentProtection(_obj[flag]);
+    if (!isDev) {
         win.setMenu(null);
     }
     ipcRenderer.send("hide");
     win.on('close', () => {
         ipcRenderer.send("show");
+        win = null;
         renderList(fileSavePath);
     })
     win.on('system-context-menu', (event) => {
@@ -142,6 +150,24 @@ function setTheme(theme) {
     document.documentElement.style.setProperty("--bgColor", `var(--${theme}-bgColor)`);
     document.documentElement.style.setProperty("--fontColor", `var(--${theme}-fontColor)`);
     document.documentElement.style.setProperty("--btn-bgColor", `var(--${theme}-btn-bgColor)`);
+}
+
+function setContent() {
+    let contentProtection = localStorage.getItem("contentProtection");
+    if (!contentProtection) {
+        localStorage.setItem("contentProtection", "true");
+        contentProtection = 'true';
+    }
+    let $contentList = $("input[name=content]");
+    $contentList.each((i, v) => {
+        $(v).attr("checked", false);
+    })
+    if(contentProtection == 'false'){
+        $("#off").attr("checked", true);
+    }
+    else{
+        $("#on").attr("checked", true);
+    }
 }
 
 function getExtend(str) {
@@ -218,14 +244,30 @@ function renderList(path) {
         })
     })
 }
-window.addEventListener("contextmenu",function(e){
-    if($(e.target).attr("class") == 'video'){
+
+
+window.addEventListener("contextmenu", function (e) {
+    if ($(e.target).attr("class") == 'video') {
         let flag = confirm('确认删除吗？');
-        if(flag){
-            let path = $(e.target).attr('src').replace("/video.mp4","")
-            fs.rm(path,{recursive:true},(err)=>{
+        if (flag) {
+            let path = $(e.target).attr('src').replace("/video.mp4", "")
+            fs.rm(path, {
+                recursive: true
+            }, (err) => {
                 renderList(fileSavePath);
             })
         }
     }
+})
+
+
+ipcRenderer.on("selectedPath", (e, path) => {
+    localStorage.setItem("fileSavePath", path[0]);
+    $("#filePath").val(path[0]);
+    fileSavePath = path[0];
+})
+
+ipcRenderer.on("shortcut", (e, data) => {
+    if (!win) return;
+    win.webContents.send("shortcut", data)
 })

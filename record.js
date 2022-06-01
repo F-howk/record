@@ -11,25 +11,11 @@ const ffmpeg = require("fluent-ffmpeg");
 log.transports.file.level = "silly";
 
 
-$("#start").on("click", function () {
-    $(this).hide();
-    $("#pause").show();
-    start();
-    if (stream) {
-        recorder.resume();
-    }else{
-        ipcRenderer.send('getStream');
-    }
-})
-$("#pause").on("click", function () {
-    $(this).hide();
-    $("#start").show();
-    pause();
-})
-$("#stop").on("click", function () {
-    stop();
-})
+$("#start").on("click", handleStart)
+$("#pause").on("click", handlePause)
+$("#stop").on("click", handleStop)
 
+let lock = false;
 let timer = null;
 let recordTime = 0;
 let stream = null;
@@ -38,6 +24,7 @@ let recorder = null;
 let fileSavePath = localStorage.getItem("fileSavePath")
 
 function start() {
+    if(timer)clearInterval(timer);
     timer = setInterval(() => {
         recordTime++
         $("#timeNum")[0].innerHTML = formateTime(recordTime)
@@ -66,8 +53,6 @@ function saveThumbnail(path) {
         .frames(1)
         .save(path + "/img.png");
 }
-
-
 
 function formateTime(recordTime) {
     let hour = parseInt(recordTime / 3600);
@@ -130,8 +115,21 @@ async function getStream(source_id) {
         saveThumbnail(fileSavePath);
         $("#timeBox").css("pointer-events", "none");
         transcoding().then(res =>{
+            lock = false;
             window.close()
         })
+    }
+    recorder.onresume = (e)=>{
+        log.log("resume");
+        lock = false;
+    }
+    recorder.onpause = (e)=>{
+        log.log("pause");
+        lock = false;
+    }
+    recorder.onstart = (e)=>{
+        log.log("start");
+        lock = false;
     }
 }
 
@@ -180,6 +178,52 @@ function transcoding() {
     })
 }
 
+function handleStart(){
+    if(recorder?.state == 'recording'){
+        lock = false;
+        return;
+    };
+    $("#start").hide();
+    $("#pause").show();
+    start();
+    if (stream) {
+        recorder.resume();
+    }else{
+        ipcRenderer.send('getStream');
+    }
+}
+
+function handlePause(){
+    if(recorder?.state == 'paused'){
+        lock = false;
+        return;
+    };
+    $("#pause").hide();
+    $("#start").show();
+    pause();
+}
+function handleStop(){
+    if(recorder?.state == 'inactive'){
+        lock = false;
+        return;
+    };
+    stop();
+}
+
+function handleShortcut(type){
+    switch(type){
+        case "start" : handleStart();break;
+        case "pause" : handlePause();break;
+        case "stop" : handleStop();break;
+    }
+}
+
 ipcRenderer.on("streamId", (e, id) => {
     getStream(id)
+})
+
+ipcRenderer.on("shortcut",(e,data)=>{
+    if(lock) return;
+    lock = true;
+    handleShortcut(data);
 })

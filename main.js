@@ -3,7 +3,8 @@ const {
     BrowserWindow,
     ipcMain,
     dialog,
-    desktopCapturer
+    desktopCapturer,
+    globalShortcut
 } = require('electron')
 const path = require('path')
 
@@ -59,6 +60,17 @@ function createWindow() {
     else{
         win.setAutoHideMenuBar(true);
     }
+
+    globalShortcut.register("Ctrl+Alt+Enter",()=>{
+        win.webContents.send("shortcut","start")
+    })
+    globalShortcut.register("Ctrl+Alt+S",()=>{
+        win.webContents.send("shortcut","stop")
+    })
+    globalShortcut.register("Ctrl+Alt+P",()=>{
+        win.webContents.send("shortcut","pause")
+    })
+
 }
 
 app.allowRendererProcessReuse = false;
