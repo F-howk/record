@@ -172,7 +172,7 @@ function transcoding() {
                 resolve();
             })
             .on("error", function (err) {
-                log.log("ffmpeg is error! " + err);
+                log.error("ffmpeg is error! " + err);
                 reject();
             })
     })
