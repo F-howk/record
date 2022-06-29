@@ -22,9 +22,15 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/logo.ico",
+      "uninstallerIcon": "assets/logo.ico",
+      "installerHeaderIcon": "assets/logo.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "record"
+    },
+    "win": {
+      "icon": "assets/logo.png"
     },
     "publish": []
   },
