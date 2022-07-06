@@ -9,6 +9,7 @@ const {
     Tray
 } = require('electron')
 const path = require('path')
+const log = require("electron-log");
 
 let filePath = path.join(__dirname, './pages/index.html')
 
@@ -62,6 +63,28 @@ function createWindow() {
         }).then(async sources => {
             e.sender.send('streamId', sources[0].id)
         })
+    })
+    let ex = process.execPath;
+    log.log(ex);
+    let res = app.getLoginItemSettings({
+        path: ex,
+        args: []
+    });
+    log.log(res)
+    if (res.openAtLogin) {
+        win.setSkipTaskbar(true);
+    }
+    ipcMain.on("setAutoStart", (e,type) => {
+        let isAt = true;
+        if(type === "false"){
+            isAt = false;
+        }
+        log.log(isAt);
+        app.setLoginItemSettings({
+            openAtLogin: isAt,
+            path: ex,
+            args: []
+        });
     })
     win.on("close", (e) => {
         if (isClose) {

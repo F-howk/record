@@ -38,7 +38,9 @@ let $themeList = $("input[name=theme]");
 let theme = localStorage.getItem("theme");
 if (theme) setTheme(theme);
 
-setContent();
+setLoginStart();
+setOptions("contentProtection");
+setOptions("login-start");
 
 $("#filePath").val(fileSavePath);
 
@@ -86,8 +88,17 @@ $("#theme-btn").on("change", "input", function (e) {
 $("#content-btn").on("change", "input", function (e) {
     let value = $(this).attr("data-value");
     localStorage.setItem("contentProtection", value);
-    setContent();
+    setOptions("contentProtection");
 })
+
+$("#login-start-btn").on("change", "input", function (e) {
+    let value = $(this).attr("data-value");
+    localStorage.setItem("login-start", value);
+    ipcRenderer.send('setAutoStart',value);
+    setOptions("login-start");
+})
+
+
 
 
 function record() {
@@ -153,20 +164,20 @@ function setTheme(theme) {
     document.documentElement.style.setProperty("--btn-bgColor", `var(--${theme}-btn-bgColor)`);
 }
 
-function setContent() {
-    let contentProtection = localStorage.getItem("contentProtection");
-    if (!contentProtection) {
-        localStorage.setItem("contentProtection", "true");
-        contentProtection = 'true';
+function setOptions(option) {
+    let _option = localStorage.getItem(option);
+    if (!_option) {
+        localStorage.setItem(option, "true");
+        _option = 'true';
     }
-    let $contentList = $("input[name=content]");
-    $contentList.each((i, v) => {
+    let $option = $(`input[name=${option}]`);
+    $option.each((i, v) => {
         $(v).attr("checked", false);
     })
-    if (contentProtection == 'false') {
-        $("#off").attr("checked", true);
+    if (_option == 'false') {
+        $(`#${option}-off`).attr("checked", true);
     } else {
-        $("#on").attr("checked", true);
+        $(`#${option}-on`).attr("checked", true);
     }
 }
 
@@ -245,6 +256,13 @@ function renderList(path) {
     })
 }
 
+function setLoginStart(){
+    let _option = localStorage.getItem("login-start");
+    if (!_option) {
+        ipcRenderer.send('setAutoStart',true);
+    }
+}
+
 
 window.addEventListener("contextmenu", function (e) {
     if ($(e.target).attr("class") == 'video') {
@@ -271,6 +289,7 @@ ipcRenderer.on("shortcut", (e, data) => {
     if (!win) return;
     win.webContents.send("shortcut", data)
 })
+
 ipcRenderer.on("go", (e, data) => {
     let $checkbox = $("input[name=record]");
     let flag = false;

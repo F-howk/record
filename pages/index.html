@@ -61,11 +61,24 @@
                     <div class="col-l">内容保护</div>
                     <div id="content-btn" class="col-r">
                         <label>
-                            <input id="on" data-value="true" type="radio" name="content" checked>
+                            <input id="contentProtection-on" data-value="true" type="radio" name="contentProtection" checked>
                             <span>开启</span>
                         </label>
                         <label>
-                            <input id="off" data-value="false" type="radio" name="content">
+                            <input id="contentProtection-off" data-value="false" type="radio" name="contentProtection">
+                            <span>关闭</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="rows flex">
+                    <div class="col-l">开机启动</div>
+                    <div id="login-start-btn" class="col-r">
+                        <label>
+                            <input id="login-start-on" data-value="true" type="radio" name="login-start" checked>
+                            <span>开启</span>
+                        </label>
+                        <label>
+                            <input id="login-start-off" data-value="false" type="radio" name="login-start">
                             <span>关闭</span>
                         </label>
                     </div>
@@ -73,6 +86,7 @@
                 <div class="rows flex">
                     <div class="col-l">快捷键</div>
                     <div id="shortcut" class="col-r">
+                        <div>Ctrl+Alt+G+O&emsp;&emsp;开始</div>
                         <div>Ctrl+Alt+Enter&emsp;开始录制</div>
                         <div>Ctrl+Alt+S&emsp;&emsp;&emsp;停止录制（保存）</div>
                         <div>Ctrl+Alt+P&emsp;&emsp;&emsp;暂停录制</div>
