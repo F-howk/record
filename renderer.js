@@ -124,14 +124,15 @@ function record() {
     win.loadFile(filePath);
     let flag = localStorage.getItem("contentProtection");
     let _obj = {
-        'true':true,
-        'false':false
+        'true': true,
+        'false': false
     }
     win.setContentProtection(_obj[flag]);
     if (!isDev) {
         win.setMenu(null);
     }
     ipcRenderer.send("hide");
+    win.setSkipTaskbar(true);
     win.on('close', () => {
         ipcRenderer.send("show");
         win = null;
@@ -162,10 +163,9 @@ function setContent() {
     $contentList.each((i, v) => {
         $(v).attr("checked", false);
     })
-    if(contentProtection == 'false'){
+    if (contentProtection == 'false') {
         $("#off").attr("checked", true);
-    }
-    else{
+    } else {
         $("#on").attr("checked", true);
     }
 }
@@ -270,4 +270,17 @@ ipcRenderer.on("selectedPath", (e, path) => {
 ipcRenderer.on("shortcut", (e, data) => {
     if (!win) return;
     win.webContents.send("shortcut", data)
+})
+ipcRenderer.on("go", (e, data) => {
+    let $checkbox = $("input[name=record]");
+    let flag = false;
+    $checkbox.each((i, v) => {
+        let checked = $(v)[0].checked;
+        if (checked) flag = true;
+    })
+    if (!flag) {
+        alert("请选择录制项")
+    } else {
+        record()
+    }
 })

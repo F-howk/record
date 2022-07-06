@@ -4,13 +4,21 @@ const {
     ipcMain,
     dialog,
     desktopCapturer,
-    globalShortcut
+    globalShortcut,
+    Menu,
+    Tray
 } = require('electron')
 const path = require('path')
 
 let filePath = path.join(__dirname, './pages/index.html')
 
 let win = null;
+
+let isClose = false;
+
+let isSubWin = false;
+
+let tray  = null;
 
 function createWindow() {
     win = new BrowserWindow({
@@ -41,9 +49,11 @@ function createWindow() {
         })
     })
     ipcMain.on("hide", (e) => {
+        isSubWin = true;
         win.hide();
     })
     ipcMain.on("show", (e) => {
+        isSubWin = false;
         win.show();
     })
     ipcMain.on("getStream", (e) => {
@@ -53,22 +63,32 @@ function createWindow() {
             e.sender.send('streamId', sources[0].id)
         })
     })
+    win.on("close", (e) => {
+        if (isClose) {
+            win.close();
+            return;
+        }
+        win.hide();
+        e.preventDefault();
+    })
     let isDev = process.env.NODE_ENV == 'dev';
-    if(!isDev){
+    if (!isDev) {
         win.setMenu(null);
-    }
-    else{
+    } else {
         win.setAutoHideMenuBar(true);
     }
 
-    globalShortcut.register("Ctrl+Alt+Enter",()=>{
-        win.webContents.send("shortcut","start")
+    globalShortcut.register("Ctrl+Alt+Enter", () => {
+        win.webContents.send("shortcut", "start")
     })
-    globalShortcut.register("Ctrl+Alt+S",()=>{
-        win.webContents.send("shortcut","stop")
+    globalShortcut.register("Ctrl+Alt+S", () => {
+        win.webContents.send("shortcut", "stop")
     })
-    globalShortcut.register("Ctrl+Alt+P",()=>{
-        win.webContents.send("shortcut","pause")
+    globalShortcut.register("Ctrl+Alt+P", () => {
+        win.webContents.send("shortcut", "pause")
+    })
+    globalShortcut.register("Ctrl+Alt+G+O", () => {
+        win.webContents.send("go", "go")
     })
 
 }
@@ -80,6 +100,28 @@ app.whenReady().then(() => {
     remote.initialize();
     createWindow();
     remote.enable(win.webContents)
+
+    let iconPath = path.join(__dirname, './assets/logo.png');
+    let tray = new Tray(iconPath)
+    let contextMenu = Menu.buildFromTemplate([{
+        label: '关闭',
+        click: () => {
+            isClose = true;
+            tray.destroy();
+            let wins = BrowserWindow.getAllWindows();
+            wins.forEach(v =>{
+                v.close();
+            })
+        }
+    }])
+    tray.setToolTip('record')
+    tray.setContextMenu(contextMenu)
+
+    tray.on('click', () => {
+        if(!isSubWin){
+            win.show();
+        }
+    })
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
