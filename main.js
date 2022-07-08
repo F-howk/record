@@ -27,6 +27,7 @@ function createWindow() {
         height: 800,
         minWidth: 1200,
         minHeight: 800,
+        icon:path.join(__dirname, './assets/logo.ico'),
         webPreferences: {
             nodeIntegration: true,
             webSecurity: false,
@@ -72,7 +73,8 @@ function createWindow() {
     });
     log.log(res)
     if (res.openAtLogin) {
-        win.setSkipTaskbar(true);
+        // win.setSkipTaskbar(true);
+        // win.hide();
     }
     ipcMain.on("setAutoStart", (e,type) => {
         let isAt = true;
