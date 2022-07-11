@@ -10,6 +10,7 @@ const {
 } = require('electron')
 const path = require('path')
 const log = require("electron-log");
+const {autoUpdater} = require('electron-updater');
 
 let filePath = path.join(__dirname, './pages/index.html')
 
@@ -172,3 +173,30 @@ if (!gotTheLock) {
         }
     })
 }
+
+autoUpdater.autoDownload = false;
+
+let updating = false;
+autoUpdater.on('error', function (e) {
+    log.log('error',e);
+    updating = false;
+
+})
+
+autoUpdater.on('update-available', function (info) {
+    log.log('update-available');
+    updating = true;
+    autoUpdater.downloadUpdate()
+})
+
+autoUpdater.on('update-downloaded', function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {
+    autoUpdater.quitAndInstall(true, true)
+    win.destroy()
+})
+
+ipcMain.on('checkForUpdate', () => {
+    if (updating) return
+  // 执行自动更新检查
+    log.log('checkForUpdate');
+    autoUpdater.checkForUpdates()
+})

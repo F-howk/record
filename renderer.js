@@ -303,3 +303,5 @@ ipcRenderer.on("go", (e, data) => {
         record()
     }
 })
+
+ipcRenderer.send("checkForUpdate")
