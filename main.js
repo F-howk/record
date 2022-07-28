@@ -11,6 +11,8 @@ const {
 const path = require('path')
 const log = require("electron-log");
 const {autoUpdater} = require('electron-updater');
+const settings = require("electron-settings");
+const {startProcess} = require('./extend/index.js');
 
 let filePath = path.join(__dirname, './pages/index.html')
 
@@ -89,6 +91,66 @@ function createWindow() {
             args: []
         });
     })
+
+    ipcMain.on("getConfig", async (e,name) => {
+        let config = await settings.get(name);
+        log.log(config,'getConfig',name);
+        if(config){
+            e.sender.send(name, config);
+        }
+    })
+
+    ipcMain.on("setConfig", async (e, {name,data}) => {
+        await settings.set(name, data);
+        let config = await settings.get(name);
+        log.log(config,'setConfig',name);
+        if(config){
+            e.sender.send(name, config);
+        }
+    })
+
+    ipcMain.on("changeStartPath",async (e,index) => {
+        let config = await settings.get("startPath");
+        log.log(config,'setConfig','startPath');
+        if(!config){
+            config = [];
+        }
+        let defaultPath = config[index] || "";
+        dialog.showOpenDialog({
+            title: "选择启动路径",
+            defaultPath,
+            properties: ['openDirectory']
+        }).then(async res => {
+            if (res.filePaths?.length > 0) {
+                if(defaultPath){
+                    config[index] = res.filePaths[0];
+                }
+                else{
+                    config.push(res.filePaths[0]);
+                }
+                config = [...new Set(config)];
+                await settings.set('startPath', config);
+                e.sender.send('startPath', config);
+            }
+        })
+    })
+
+    ipcMain.on("startItem",async (e,index) => {
+        let config = await settings.get("startPath");
+        if(!config){
+            return;
+        }
+        console.log(config[index]);
+    })
+    
+    ipcMain.on("stopItem",async (e,index) => {
+        let config = await settings.get("startPath");
+        if(!config){
+            return;
+        }
+        console.log(config);
+    })
+
     win.on("close", (e) => {
         if (isClose) {
             win.close();

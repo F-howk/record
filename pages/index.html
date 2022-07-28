@@ -20,8 +20,9 @@
     <div id="record" class="flex">
         <div class="left">
             <ul class="nav nav-pills nav-stacked" id="nav">
-                <li role="presentation" class="active" data-to="rec"><a href="#">录制</a></li>
+                <li role="presentation" data-to="rec"><a href="#">录制</a></li>
                 <li role="presentation" data-to="set"><a href="#">设置</a></li>
+                <li role="presentation" data-to="start"><a href="#">启动项</a></li>
             </ul>
         </div>
         <div class="right">
@@ -102,6 +103,22 @@
                             </span>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="start">
+                <button id="add-start" class="btn btn-default" type="button">选择要添加的启动项路径</button>
+                <div id="start-list">
+                    <table>
+                        <tbody class="start-path-list">
+                            <tr>
+                                <td style="width:200px">1</td>
+                                <td style="min-width:200px">xxxx</td>
+                                <td style="width:200px">
+                                    <span class="edit-btn">更改</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

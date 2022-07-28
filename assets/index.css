@@ -126,6 +126,43 @@ body{
     margin-right: 20px;
     margin-bottom: 20px;
 }
+
+.right .start{
+    padding: 20px;
+}
+
+.start #start-list{
+    width: 100%;
+    margin-top: 20px;
+    max-width: 1000px;
+}
+
+.start #start-list table{
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.start #start-list table td{
+    padding: 5px 10px;
+    border: 1px solid var(--borderColor);
+}
+
+.edit-btn{
+    cursor: pointer;
+}
+
+#start-list .item-btn{
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+#start-list .item-btn:hover{
+    text-decoration: underline;
+}
+
+
+
 @media (prefers-color-scheme: dark) {
     :root{
         --auto-bgColor:var(--dark-bgColor);

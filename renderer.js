@@ -24,6 +24,9 @@ let isDev = process.env.NODE_ENV == 'dev';
 
 let videoList = [];
 
+let start_path_list = [];
+
+
 fs.opendir(fileSavePath, (e, dir) => {
     if (!dir) {
         fs.mkdir(fileSavePath, (err, dir) => {
@@ -58,6 +61,10 @@ $('#nav').on("click", "li", function (e) {
         $(v).hide()
     });
     $("." + $to).show();
+    ipcRenderer.send('setConfig',{
+        name:'activeSection',
+        data:$to
+    });
 })
 
 $("#start").on("click", function (e) {
@@ -96,6 +103,20 @@ $("#login-start-btn").on("change", "input", function (e) {
     localStorage.setItem("login-start", value);
     ipcRenderer.send('setAutoStart',value);
     setOptions("login-start");
+})
+
+$("#add-start").on("click", function (e) {
+    ipcRenderer.send("changeStartPath");
+})    
+
+$("#start-list").on("click",".item-btn", function (e) {
+    let item = $(this).attr("data-item");
+    formateItem(item);
+})
+
+$("#start-list").on("click",".edit-btn", function (e) {
+    let index = $(this).attr("data-index");
+    ipcRenderer.send("changeStartPath",index);
 })
 
 
@@ -263,6 +284,36 @@ function setLoginStart(){
     }
 }
 
+function formateItem(item) {
+    let list = item.split("-");
+    if(list[0] == "start"){
+        startItem(list[1]);
+    }
+    else if(list[0] == "stop"){
+        stopItem(list[1]);
+    }
+    else{
+        delItem(list[1]);
+    }
+}
+
+function startItem(index) {
+    ipcRenderer.send("startItem",index);
+}
+
+function delItem(index) {
+    start_path_list.splice(index, 1);
+    ipcRenderer.send("setConfig",{
+        name:"startPath",
+        data:start_path_list
+    })
+}
+
+function stopItem(index){
+    ipcRenderer.send("stopItem",index);
+}
+
+
 
 window.addEventListener("contextmenu", function (e) {
     if ($(e.target).attr("class") == 'video') {
@@ -304,4 +355,40 @@ ipcRenderer.on("go", (e, data) => {
     }
 })
 
-ipcRenderer.send("checkForUpdate")
+ipcRenderer.send("checkForUpdate");
+
+ipcRenderer.send("getConfig",'startPath');
+
+ipcRenderer.send("getConfig",'activeSection');
+
+ipcRenderer.send("getStartState");
+
+ipcRenderer.on("startPath", (e, data) => {
+    let list = [...new Set(data)];
+    let str = "";
+    list.forEach((v, i) => {
+        str += `
+        <tr>
+            <td>${i + 1}</td>
+            <td class="edit-btn" data-index="${i}" >${v}</td>
+            <td>
+                <span class="item-btn" data-item="start-${i}">启动</span>
+                <span class="item-btn" data-item="del-${i}">删除</span>
+            </td>
+        </tr>
+        `
+    })
+    $(".start-path-list").html(str);
+    start_path_list = JSON.parse(JSON.stringify(list));
+})
+
+ipcRenderer.on("activeSection", (e, data) => {
+    $('#nav').children().each((i, v) => {
+        $(v).removeClass('active');
+    })
+    $(`[data-to=${data}]`).addClass("active");
+    $('.right').children().each((i, v) => {
+        $(v).hide()
+    });
+    $("." + data).show();
+})
