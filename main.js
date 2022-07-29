@@ -115,32 +115,65 @@ function createWindow() {
         if(!config){
             config = [];
         }
-        let defaultPath = config[index] || "";
+        let defaultObj = config[index] || {};
         dialog.showOpenDialog({
             title: "选择启动路径",
-            defaultPath,
+            defaultPath:defaultObj.path,
             properties: ['openDirectory']
         }).then(async res => {
             if (res.filePaths?.length > 0) {
-                if(defaultPath){
-                    config[index] = res.filePaths[0];
+                let selectPath = res.filePaths[0];
+                let scripts = "";
+                try {
+                    scripts = require(selectPath + "/package.json").scripts;
+                } catch (error) {
+                    log.error(error);
+                    dialog.showErrorBox('An Error Message', String(error));
+                    return;
+                }
+                if(Object.values(defaultObj).length > 0){
+                    config[index].path = selectPath;
+                    config[index].scripts = scripts;
                 }
                 else{
-                    config.push(res.filePaths[0]);
+                    config.push({
+                        path:selectPath,
+                        scripts:scripts
+                    });
                 }
-                config = [...new Set(config)];
-                await settings.set('startPath', config);
-                e.sender.send('startPath', config);
+                let arr = [];
+                config.forEach(v =>{
+                    let index = arr.map(val => val.path).indexOf(v.path);
+                    if(index === -1){
+                        arr.push(v);
+                    }
+                })
+                await settings.set('startPath', arr);
+                e.sender.send('startPath', arr);
             }
         })
     })
 
-    ipcMain.on("startItem",async (e,index) => {
-        let config = await settings.get("startPath");
-        if(!config){
-            return;
-        }
-        console.log(config[index]);
+    ipcMain.on("startItem",async (e,{path,cmd}) => {
+        let str = `cd ${path} && yarn ${cmd}`;
+        startProcess(str,(_process) => {
+            _process.stdout.on('data', function (data) {
+                e.sender.send('item_process', {
+                    path,
+                    info:data
+                });
+            })
+            _process.stderr.on('data', function (data) {
+                log.log('stderr: ' + data)
+            })
+            _process.on('close', function (code) {
+                log.log('out code：' + code)
+            })
+            e.sender.send('item_process', {
+                path,
+                pid:_process.pid
+            });
+        })
     })
     
     ipcMain.on("stopItem",async (e,index) => {

@@ -154,12 +154,22 @@ body{
 
 #start-list .item-btn{
     cursor: pointer;
-    margin-right: 10px;
 }
 
 #start-list .item-btn:hover{
     text-decoration: underline;
 }
+
+.item-btns{
+    display: block;
+}
+
+.scripts-btn-box{
+    display: inline-block;
+    margin-right: 50px;
+    vertical-align: middle;
+}
+
 
 
 

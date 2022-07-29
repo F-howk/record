@@ -61,9 +61,9 @@ $('#nav').on("click", "li", function (e) {
         $(v).hide()
     });
     $("." + $to).show();
-    ipcRenderer.send('setConfig',{
-        name:'activeSection',
-        data:$to
+    ipcRenderer.send('setConfig', {
+        name: 'activeSection',
+        data: $to
     });
 })
 
@@ -101,22 +101,22 @@ $("#content-btn").on("change", "input", function (e) {
 $("#login-start-btn").on("change", "input", function (e) {
     let value = $(this).attr("data-value");
     localStorage.setItem("login-start", value);
-    ipcRenderer.send('setAutoStart',value);
+    ipcRenderer.send('setAutoStart', value);
     setOptions("login-start");
 })
 
 $("#add-start").on("click", function (e) {
     ipcRenderer.send("changeStartPath");
-})    
+})
 
-$("#start-list").on("click",".item-btn", function (e) {
+$("#start-list").on("click", ".item-btn", function (e) {
     let item = $(this).attr("data-item");
     formateItem(item);
 })
 
-$("#start-list").on("click",".edit-btn", function (e) {
+$("#start-list").on("click", ".edit-btn", function (e) {
     let index = $(this).attr("data-index");
-    ipcRenderer.send("changeStartPath",index);
+    ipcRenderer.send("changeStartPath", index);
 })
 
 
@@ -277,40 +277,39 @@ function renderList(path) {
     })
 }
 
-function setLoginStart(){
+function setLoginStart() {
     let _option = localStorage.getItem("login-start");
     if (!_option) {
-        ipcRenderer.send('setAutoStart',true);
+        ipcRenderer.send('setAutoStart', true);
     }
 }
 
 function formateItem(item) {
-    let list = item.split("-");
-    if(list[0] == "start"){
-        startItem(list[1]);
-    }
-    else if(list[0] == "stop"){
+    let list = item.split("&");
+    if (list[0] == "start") {
+        startItem(list[1],list[2]);
+    } else if (list[0] == "stop") {
         stopItem(list[1]);
-    }
-    else{
+    } else {
         delItem(list[1]);
     }
 }
 
-function startItem(index) {
-    ipcRenderer.send("startItem",index);
+function startItem(index,cmd) {
+    let path = start_path_list[index].path;
+    ipcRenderer.send("startItem", {path,cmd});
 }
 
 function delItem(index) {
     start_path_list.splice(index, 1);
-    ipcRenderer.send("setConfig",{
-        name:"startPath",
-        data:start_path_list
+    ipcRenderer.send("setConfig", {
+        name: "startPath",
+        data: start_path_list
     })
 }
 
-function stopItem(index){
-    ipcRenderer.send("stopItem",index);
+function stopItem(index) {
+    ipcRenderer.send("stopItem", index);
 }
 
 
@@ -357,9 +356,9 @@ ipcRenderer.on("go", (e, data) => {
 
 ipcRenderer.send("checkForUpdate");
 
-ipcRenderer.send("getConfig",'startPath');
+ipcRenderer.send("getConfig", 'startPath');
 
-ipcRenderer.send("getConfig",'activeSection');
+ipcRenderer.send("getConfig", 'activeSection');
 
 ipcRenderer.send("getStartState");
 
@@ -368,12 +367,21 @@ ipcRenderer.on("startPath", (e, data) => {
     let str = "";
     list.forEach((v, i) => {
         str += `
-        <tr>
-            <td>${i + 1}</td>
-            <td class="edit-btn" data-index="${i}" >${v}</td>
-            <td>
-                <span class="item-btn" data-item="start-${i}">启动</span>
-                <span class="item-btn" data-item="del-${i}">删除</span>
+        <tr class="path-${i}">
+            <td style="width:100px">${i + 1}</td>
+            <td style="min-width:200px" class="edit-btn" data-index="${i}" >${v.path}</td>
+            <td style="width:300px">
+                <div class="scripts-btn-box">`
+        for (let index in v.scripts) {
+            str += `<span class="item-btn item-btns" data-item="start&${i}&${index}">${index}</span>`
+        }
+        str += `</div>
+                <div class="scripts-btn-box">
+                    <span class="item-btn" data-item="del&${i}">删除</span>
+                </div>
+            </td>
+            <td style="width:400px">
+                <div class="process-info"></div>
             </td>
         </tr>
         `
@@ -391,4 +399,16 @@ ipcRenderer.on("activeSection", (e, data) => {
         $(v).hide()
     });
     $("." + data).show();
+})
+
+ipcRenderer.on("item_process", (e, data) => {
+    let index = 0;
+    start_path_list.forEach((v,i) =>{
+        if(v.path == data.path){
+            index = i;
+        }
+    })
+    let process_info = $(`.path-${index} .process-info`).html();
+    console.log(data.info)
+    $(`.path-${index} .process-info`).html(process_info + `<p>${data.info || ""}</p>`);
 })
