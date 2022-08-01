@@ -420,8 +420,11 @@ ipcRenderer.on("startPath", (e, data) => {
         v.term = new Terminal({
             disableStdin: false
         });
-        v.term.loadAddon(new WebLinksAddon());
-        v.fitAddon = new FitAddon()
+        v.links = new WebLinksAddon((e, url) => {
+            shell.openPath(url)
+        });
+        v.fitAddon = new FitAddon();
+        v.term.loadAddon(v.links);
         v.term.loadAddon(v.fitAddon);
         v.term.open($(`.path-${i} .process-info`)[0]);
         v.fitAddon.fit();
@@ -431,8 +434,7 @@ ipcRenderer.on("startPath", (e, data) => {
                 v.term.prompt()
             } else if (e.domEvent.keyCode === 8) { // back 删除的情况
                 v.term.write(' ')
-                if (v.term._core.buffer.x > 2) {
-                }
+                if (v.term._core.buffer.x > 2) {}
             } else if (printable) {
                 v.term.write(e.key)
             }
@@ -462,7 +464,10 @@ ipcRenderer.on("item_process", (e, data) => {
             index = i;
         }
     })
-    start_path_list[index].term.write(data.info || '');
+    let info = data.info;
+    if (info) {
+        start_path_list[index].term.write(info + '\r' || '\r');
+    }
     // let process_info = $(`.path-${index} .process-info`).html();
     // let info = replaceUrl(data.info || "");
     // $(`.path-${index} .process-info`).html(process_info + `<p class="chalk-html">${info}</p>`);
