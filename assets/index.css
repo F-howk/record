@@ -170,7 +170,11 @@ body{
     vertical-align: middle;
 }
 
-
+.chalk-html{
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: normal;
+    font-size: 14px;
+}
 
 
 @media (prefers-color-scheme: dark) {

@@ -13,6 +13,19 @@ const {
     screen
 } = require("@electron/remote")
 
+const {
+    Terminal
+} = require('xterm');
+const {
+    WebLinksAddon
+} = require('xterm-addon-web-links');
+const {
+    FitAddon
+} = require('xterm-addon-fit');
+const {
+    SearchAddon
+} = require('xterm-addon-search');
+
 let win = null;
 
 let fileSavePath = localStorage.getItem("fileSavePath");
@@ -287,7 +300,7 @@ function setLoginStart() {
 function formateItem(item) {
     let list = item.split("&");
     if (list[0] == "start") {
-        startItem(list[1],list[2]);
+        startItem(list[1], list[2]);
     } else if (list[0] == "stop") {
         stopItem(list[1]);
     } else {
@@ -295,9 +308,12 @@ function formateItem(item) {
     }
 }
 
-function startItem(index,cmd) {
+function startItem(index, cmd) {
     let path = start_path_list[index].path;
-    ipcRenderer.send("startItem", {path,cmd});
+    ipcRenderer.send("startItem", {
+        path,
+        cmd
+    });
 }
 
 function delItem(index) {
@@ -312,6 +328,17 @@ function stopItem(index) {
     ipcRenderer.send("stopItem", index);
 }
 
+function initTerm(tags, msg) {
+    let trem = new Terminal();
+    trem.open(tags);
+    trem.write(msg);
+}
+
+function replaceUrl(str) {
+    let reg = /(http|https):\/\/([\w.]+\/?)\S*/;
+    return str
+    return str.replace(reg, '<span class="jump-url" data-href="$&">$&</span>');
+}
 
 
 window.addEventListener("contextmenu", function (e) {
@@ -387,7 +414,34 @@ ipcRenderer.on("startPath", (e, data) => {
         `
     })
     $(".start-path-list").html(str);
+
     start_path_list = JSON.parse(JSON.stringify(list));
+    start_path_list.forEach((v, i) => {
+        v.term = new Terminal({
+            disableStdin: false
+        });
+        v.term.loadAddon(new WebLinksAddon());
+        v.fitAddon = new FitAddon()
+        v.term.loadAddon(v.fitAddon);
+        v.term.open($(`.path-${i} .process-info`)[0]);
+        v.fitAddon.fit();
+        v.term.onKey(e => {
+            const printable = !e.domEvent.altKey && !e.domEvent.altGraphKey && !e.domEvent.ctrlKey && !e.domEvent.metaKey
+            if (e.domEvent.keyCode === 13) {
+                v.term.prompt()
+            } else if (e.domEvent.keyCode === 8) { // back 删除的情况
+                v.term.write(' ')
+                if (v.term._core.buffer.x > 2) {
+                }
+            } else if (printable) {
+                v.term.write(e.key)
+            }
+            console.log(1, 'print', e.key)
+        })
+        v.term.onData(key => { // 粘贴的情况
+            if (key.length > 1) v.term.write(key)
+        })
+    })
 })
 
 ipcRenderer.on("activeSection", (e, data) => {
@@ -403,12 +457,13 @@ ipcRenderer.on("activeSection", (e, data) => {
 
 ipcRenderer.on("item_process", (e, data) => {
     let index = 0;
-    start_path_list.forEach((v,i) =>{
-        if(v.path == data.path){
+    start_path_list.forEach((v, i) => {
+        if (v.path == data.path) {
             index = i;
         }
     })
-    let process_info = $(`.path-${index} .process-info`).html();
-    console.log(data.info)
-    $(`.path-${index} .process-info`).html(process_info + `<p>${data.info || ""}</p>`);
+    start_path_list[index].term.write(data.info || '');
+    // let process_info = $(`.path-${index} .process-info`).html();
+    // let info = replaceUrl(data.info || "");
+    // $(`.path-${index} .process-info`).html(process_info + `<p class="chalk-html">${info}</p>`);
 })
