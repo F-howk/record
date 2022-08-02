@@ -128,8 +128,13 @@ $("#start-list").on("click", ".item-btn", function (e) {
 })
 
 $("#start-list").on("click", ".edit-btn", function (e) {
-    let index = $(this).attr("data-index");
-    ipcRenderer.send("changeStartPath", index);
+    if(e.ctrlKey){
+        shell.openPath($(this).text());
+    }
+    else{
+        let index = $(this).attr("data-index");
+        ipcRenderer.send("changeStartPath", index);
+    }
 })
 
 
@@ -621,7 +626,4 @@ ipcRenderer.on("item_process", (e, data) => {
     if (info) {
         start_path_list[index].term.writeln(info || "");
     }
-    // let process_info = $(`.path-${index} .process-info`).html();
-    // let info = replaceUrl(data.info || "");
-    // $(`.path-${index} .process-info`).html(process_info + `<p class="chalk-html">${info}</p>`);
 })
