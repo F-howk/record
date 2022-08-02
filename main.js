@@ -24,6 +24,8 @@ let isSubWin = false;
 
 let tray  = null;
 
+let process_list = [];
+
 function createWindow() {
     win = new BrowserWindow({
         width: 1200,
@@ -134,28 +136,32 @@ function createWindow() {
                 if(Object.values(defaultObj).length > 0){
                     config[index].path = selectPath;
                     config[index].scripts = scripts;
-                }
-                else{
-                    config.push({
-                        path:selectPath,
-                        scripts:scripts
+                    e.sender.send('changeStartPath', {
+                        index,
+                        data: config[index]
                     });
                 }
-                let arr = [];
-                config.forEach(v =>{
-                    let index = arr.map(val => val.path).indexOf(v.path);
-                    if(index === -1){
-                        arr.push(v);
+                else{
+                    let selectIndex = config.map(v => v.path).indexOf(selectPath);
+                    if(selectIndex > -1){
+                        dialog.showErrorBox('An Error Message', '该路径已存在');
                     }
-                })
-                await settings.set('startPath', arr);
-                e.sender.send('startPath', arr);
+                    else{
+                        let obj = {
+                            path:selectPath,
+                            scripts:scripts
+                        }
+                        config.push(obj);
+                        e.sender.send('addStartPath', obj);
+                    }
+                }
+                await settings.set("startPath", config);
             }
         })
     })
 
     ipcMain.on("startItem",async (e,{path,cmd}) => {
-        let str = `cd ${path} && yarn ${cmd}`;
+        let str = `cd ${path} && ${cmd}`;
         startProcess(str,(_process) => {
             _process.stdout.on('data', function (data) {
                 e.sender.send('item_process', {
@@ -164,11 +170,24 @@ function createWindow() {
                 });
             })
             _process.stderr.on('data', function (data) {
-                log.log('stderr: ' + data)
+                e.sender.send('item_process', {
+                    path,
+                    info:data
+                });
             })
             _process.on('close', function (code) {
-                log.log('out code：' + code)
+                e.sender.send('item_process', {
+                    path,
+                    info:code
+                });
             })
+            _process.on("exit",function(code){
+                e.sender.send('item_process', {
+                    path,
+                    info:code
+                });
+            })
+            process_list.push(_process);
             e.sender.send('item_process', {
                 path,
                 pid:_process.pid
@@ -176,12 +195,29 @@ function createWindow() {
         })
     })
     
+    ipcMain.on("delItem",async (e,{path,pid}) => {
+        let config = await settings.get("startPath");
+        let index = config.map(v => v.path).indexOf(path);
+        if(index !== -1){
+            config.splice(index,1);
+            if(pid){
+                process.kill(pid);
+            };
+            await settings.set('startPath', config);
+        }
+    })
+
+
     ipcMain.on("stopItem",async (e,index) => {
         let config = await settings.get("startPath");
         if(!config){
             return;
         }
         console.log(config);
+    })
+
+    ipcMain.on("kill",(e,pid)=>{
+        process.kill(pid);
     })
 
     win.on("close", (e) => {

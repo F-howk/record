@@ -312,34 +312,170 @@ function startItem(index, cmd) {
     let path = start_path_list[index].path;
     ipcRenderer.send("startItem", {
         path,
-        cmd
+        cmd:'yarn ' + cmd
     });
 }
 
 function delItem(index) {
+    let data = {
+        path: start_path_list[index].path,
+        pid: start_path_list[index].pid
+    };
     start_path_list.splice(index, 1);
-    ipcRenderer.send("setConfig", {
-        name: "startPath",
-        data: start_path_list
-    })
+    $(`.path-${index}`).remove();
+    ipcRenderer.send("delItem", data);
 }
 
 function stopItem(index) {
     ipcRenderer.send("stopItem", index);
 }
 
-function initTerm(tags, msg) {
-    let trem = new Terminal();
-    trem.open(tags);
-    trem.write(msg);
+let command = "";
+let commands = {
+    help: {
+        f: (item) => {
+            item.term.writeln([
+                'Welcome to xterm.js! Try some of the commands below.',
+                '',
+                ...Object.keys(commands).map(e => `  ${e.padEnd(10)} ${commands[e].description}`)
+            ].join('\n\r'));
+            prompt(item);
+        },
+        description: 'Prints this help message',
+    },
+    ls: {
+        f: (item) => {
+            item.term.writeln(['a', 'bunch', 'of', 'fake', 'files'].join('\r\n'));
+            item.term.prompt(item.term);
+        },
+        description: 'Prints a fake directory structure'
+    },
+    loadtest: {
+        f: (item) => {
+            let testData = [];
+            let byteCount = 0;
+            for (let i = 0; i < 50; i++) {
+                let count = 1 + Math.floor(Math.random() * 79);
+                byteCount += count + 2;
+                let data = new Uint8Array(count + 2);
+                data[0] = 0x0A; // \n
+                for (let i = 1; i < count + 1; i++) {
+                    data[i] = 0x61 + Math.floor(Math.random() * (0x7A - 0x61));
+                }
+                // End each line with \r so the cursor remains constant, this is what ls/tree do and improves
+                // performance significantly due to the cursor DOM element not needing to change
+                data[data.length - 1] = 0x0D; // \r
+                testData.push(data);
+            }
+            let start = performance.now();
+            for (let i = 0; i < 1024; i++) {
+                for (const d of testData) {
+                    item.term.write(d);
+                }
+            }
+            // Wait for all data to be parsed before evaluating time
+            item.term.write('', () => {
+                let time = Math.round(performance.now() - start);
+                let mbs = ((byteCount / 1024) * (1 / (time / 1000))).toFixed(2);
+                item.term.write(`\n\r\nWrote ${byteCount}kB in ${time}ms (${mbs}MB/s) using the ${isWebglEnabled ? 'webgl' : 'canvas'} renderer`);
+                item.term.prompt();
+            });
+        },
+        description: 'Simulate a lot of data coming from a process'
+    }
+};
+let baseTheme = {
+    foreground: '#F8F8F8',
+    background: '#2D2E2C',
+    selection: '#5DA5D533',
+    black: '#1E1E1D',
+    brightBlack: '#262625',
+    red: '#CE5C5C',
+    brightRed: '#FF7272',
+    green: '#5BCC5B',
+    brightGreen: '#72FF72',
+    yellow: '#CCCC5B',
+    brightYellow: '#FFFF72',
+    blue: '#5D5DD3',
+    brightBlue: '#7279FF',
+    magenta: '#BC5ED1',
+    brightMagenta: '#E572FF',
+    cyan: '#5DA5D5',
+    brightCyan: '#72F0FF',
+    white: '#F8F8F8',
+    brightWhite: '#FFFFFF'
+};
+
+function initTerm(item, index) {
+    item.term = new Terminal({
+        cursorBlink: true,
+        fontFamily: '"Cascadia Code", Menlo, monospace',
+        theme: baseTheme,
+    });
+    item.links = new WebLinksAddon((e, url) => {
+        shell.openPath(url)
+    });
+    item.fitAddon = new FitAddon();
+    item.term.loadAddon(item.links);
+    item.term.loadAddon(item.fitAddon);
+    item.term.open($(`.path-${index} .process-info`)[0]);
+    item.term.write("$ ");
+    item.fitAddon.fit();
+    item.term.prompt = () => {
+        item.term.write('\r\n$ ');
+    };
+    item.term.onData(e => {
+        switch (e) {
+            case '\u0003': // Ctrl+C
+                item.term.write('^C');
+                if (item.pid) {
+                    ipcRenderer.send("kill", item.pid);
+                    item.pid = "";
+                }
+                prompt(item);
+                break;
+            case '\r': // Enter
+                runCommand(item, command);
+                command = '';
+                break;
+            case '\u007F': // del
+                if (item.term._core.buffer.x > 2) {
+                    item.term.write('\b \b');
+                    if (command.length > 0) {
+                        command = command.substr(0, command.length - 1);
+                    }
+                }
+                break;
+            default:
+                if (e >= String.fromCharCode(0x20) && e <= String.fromCharCode(0x7E) || e >= '\u00a0') {
+                    command += e;
+                    item.term.write(e);
+                }
+        }
+    });
 }
 
-function replaceUrl(str) {
-    let reg = /(http|https):\/\/([\w.]+\/?)\S*/;
-    return str
-    return str.replace(reg, '<span class="jump-url" data-href="$&">$&</span>');
+function prompt(item) {
+    command = '';
+    item.term.write('\r\n$ ');
 }
 
+function runCommand(item, text) {
+    const command = text.trim().split(' ')[0];
+    if (command.length > 0) {
+        item.term.writeln('');
+        // ipcRenderer.send("startItem", {
+        //     path:item.path,
+        //     cmd: text.trim()
+        // });
+        if (command in commands) {
+            commands[command].f(item);
+            return;
+        }
+        item.term.writeln(`${command}: command not found`);
+    }
+    prompt(item);
+}
 
 window.addEventListener("contextmenu", function (e) {
     if ($(e.target).attr("class") == 'video') {
@@ -417,33 +553,47 @@ ipcRenderer.on("startPath", (e, data) => {
 
     start_path_list = JSON.parse(JSON.stringify(list));
     start_path_list.forEach((v, i) => {
-        v.term = new Terminal({
-            disableStdin: false
-        });
-        v.links = new WebLinksAddon((e, url) => {
-            shell.openPath(url)
-        });
-        v.fitAddon = new FitAddon();
-        v.term.loadAddon(v.links);
-        v.term.loadAddon(v.fitAddon);
-        v.term.open($(`.path-${i} .process-info`)[0]);
-        v.fitAddon.fit();
-        v.term.onKey(e => {
-            const printable = !e.domEvent.altKey && !e.domEvent.altGraphKey && !e.domEvent.ctrlKey && !e.domEvent.metaKey
-            if (e.domEvent.keyCode === 13) {
-                v.term.prompt()
-            } else if (e.domEvent.keyCode === 8) { // back 删除的情况
-                v.term.write(' ')
-                if (v.term._core.buffer.x > 2) {}
-            } else if (printable) {
-                v.term.write(e.key)
-            }
-            console.log(1, 'print', e.key)
-        })
-        v.term.onData(key => { // 粘贴的情况
-            if (key.length > 1) v.term.write(key)
-        })
+        initTerm(v, i);
     })
+})
+
+ipcRenderer.on("changeStartPath", (e, data) => {
+    start_path_list[data.index] = data.data;
+    let v = start_path_list[data.index];
+    $(`.path-${data.index} .edit-btn`).text(v.path);
+    let str = "";
+    for (let index in v.scripts) {
+        str += `<span class="item-btn item-btns" data-item="start&${data.index}&${index}">${index}</span>`
+    }
+    $($(`.path-${data.index} .scripts-btn-box`)[0]).html(str);
+    $(`.path-${data.index} .process-info`).html("");
+    initTerm(v, data.index);
+})
+
+ipcRenderer.on("addStartPath", (e, data) => {
+    start_path_list.push(data);
+    let index = start_path_list.length - 1;
+    let v = start_path_list[index];
+    let str = "";
+    for (let i in data.scripts) {
+        str += `<span class="item-btn item-btns" data-item="start&${index}&${i}">${i}</span>`
+    }
+    $(".start-path-list").append(`
+        <tr class="path-${index}">
+            <td style="width:100px">${index + 1}</td>
+            <td style="min-width:200px" class="edit-btn" data-index="${index}" >${data.path}</td>
+            <td style="width:300px">
+                <div class="scripts-btn-box">${str}</div>
+                <div class="scripts-btn-box">
+                    <span class="item-btn" data-item="del&${index}">删除</span>
+                </div>
+            </td>
+            <td style="width:400px">
+                <div class="process-info"></div>
+            </td>
+        </tr>
+    `)
+    initTerm(v, index);
 })
 
 ipcRenderer.on("activeSection", (e, data) => {
@@ -462,11 +612,14 @@ ipcRenderer.on("item_process", (e, data) => {
     start_path_list.forEach((v, i) => {
         if (v.path == data.path) {
             index = i;
+            if (!v.pid) {
+                v.pid = data.pid;
+            }
         }
     })
     let info = data.info;
     if (info) {
-        start_path_list[index].term.write(info + '\r' || '\r');
+        start_path_list[index].term.writeln(info || "");
     }
     // let process_info = $(`.path-${index} .process-info`).html();
     // let info = replaceUrl(data.info || "");
