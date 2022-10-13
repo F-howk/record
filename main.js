@@ -162,7 +162,7 @@ function createWindow() {
 
     ipcMain.on("startItem",async (e,{path,cmd}) => {
         let disc = paht.split(":");
-        let str = `${disc}: && cd ${path} && ${cmd}`;
+        let str = `${disc[0]}: && cd ${path} && ${cmd}`;
         startProcess(str,(_process) => {
             _process.stdout.on('data', function (data) {
                 e.sender.send('item_process', {
