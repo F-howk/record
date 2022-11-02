@@ -106,6 +106,7 @@ async function getStream(source_id) {
     log.log('recorder:',recorder);
     recorder.start(1000);
     recorder.ondataavailable = (event) => {
+        // saveMedia(event.data);
         saveMedia(new Blob([event.data], {
             type: "video/webm",
         }));
@@ -137,6 +138,7 @@ function saveMedia(blob) {
     let reader = new FileReader();
     reader.onload = () => {
         let buffer = new Buffer(reader.result);
+        // let buffer = Buffer.from(reader.result);
         fs.appendFile(
             fileSavePath + "/video.webm",
             buffer, {},
