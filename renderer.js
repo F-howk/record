@@ -241,6 +241,7 @@ function getList(path) {
     videoList = [];
     return new Promise((resolve, reject) => {
         fs.readdir(path, (err, subDir) => {
+            if(subDir.length == 0) resolve(videoList);
             subDir.forEach((v, index) => {
                 fs.stat(path + '/' + v, (suberr, stats) => {
                     if (stats.isDirectory()) {

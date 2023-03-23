@@ -114,11 +114,13 @@ async function getStream(source_id) {
     recorder.onstop = (e) => {
         log.log("stop")
         saveThumbnail(fileSavePath);
-        $("#timeBox").css("pointer-events", "none");
-        transcoding().then(res =>{
-            lock = false;
-            window.close()
-        })
+        setTimeout(()=>{
+            $("#timeBox").css("pointer-events", "none");
+            transcoding().then(res =>{
+                lock = false;
+                window.close()
+            })
+        },300)
     }
     recorder.onresume = (e)=>{
         log.log("resume");
