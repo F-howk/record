@@ -103,6 +103,7 @@ async function getStream(source_id) {
     //   });
     log.log('stream:',stream);
     recorder = new MediaRecorder(stream);
+    // mimeType : 'video/webm;codecs=vp8'
     log.log('recorder:',recorder);
     recorder.start(1000);
     recorder.ondataavailable = (event) => {
@@ -110,6 +111,7 @@ async function getStream(source_id) {
         saveMedia(new Blob([event.data], {
             type: "video/webm",
         }));
+        // type: "video/webm;codecs=vp8",
     }
     recorder.onstop = (e) => {
         log.log("stop")
