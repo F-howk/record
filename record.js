@@ -78,15 +78,16 @@ async function getStream(source_id) {
                 maxHeight: window.screen.height,
             },
         },
-        audio: {
-            mandatory: {
-                chromeMediaSource: "desktop",
-            },
-            autoGainControl: {
-                ConstrainBoolean: true,
-            },
-            ConstrainBoolean: true,
-        },
+        // TODO
+        // audio: {
+        //     mandatory: {
+        //         chromeMediaSource: "desktop",
+        //     },
+        //     autoGainControl: {
+        //         ConstrainBoolean: true,
+        //     },
+        //     ConstrainBoolean: true,
+        // },
     });
     try {
         audioStream = await navigator.mediaDevices.getUserMedia({
